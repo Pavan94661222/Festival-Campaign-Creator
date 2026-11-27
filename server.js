@@ -78,6 +78,32 @@ Return ONLY the JSON. No markdown formatting like \`\`\`json.`;
     }
 }
 
+// ─── WhatsApp Delivery (TextMeBot) ──────────────────────────────
+async function sendWhatsApp(message) {
+    const recipient = process.env.WHATSAPP_PHONE;
+    const apikey = process.env.TEXTMEBOT_API_KEY;
+    if (!recipient || !apikey) return { sent: false, detail: 'not configured' };
+
+    const url = `http://api.textmebot.com/send.php?recipient=${encodeURIComponent(recipient)}` +
+        `&apikey=${encodeURIComponent(apikey)}` +
+        `&text=${encodeURIComponent(message || '')}&json=yes`;
+
+    try {
+        const r = await fetch(url);
+        const body = await r.text();
+        console.log('📲 TextMeBot response:', body);
+        let ok = r.ok;
+        try {
+            const parsed = JSON.parse(body);
+            if (parsed.status) ok = parsed.status === 'success';
+        } catch { /* non-JSON response */ }
+        return { sent: ok, detail: body };
+    } catch (err) {
+        console.error('⚠️ TextMeBot failed:', err.message);
+        return { sent: false, detail: err.message };
+    }
+}
+
 // ─── API Endpoints ──────────────────────────────────────────────
 app.post('/api/generate-campaign', async (req, res) => {
     try {
@@ -106,7 +132,16 @@ app.post('/api/generate-campaign', async (req, res) => {
             }).catch(err => console.error('⚠️ n8n forward failed:', err.message));
         }
 
-        res.json({ success: true, data: campaignData, id: campaignId });
+        // Send campaign summary to WhatsApp via TextMeBot
+        const theme = campaignData.theme || {};
+        const whatsappMessage =
+            `🎉 *${req.body.festivalName} Campaign*\n` +
+            `${theme.concept || ''}\n` +
+            `${theme.tagline ? '_' + theme.tagline + '_\n' : ''}` +
+            `\n${campaignData.exampleOutput || ''}`;
+        const whatsapp = await sendWhatsApp(whatsappMessage);
+
+        res.json({ success: true, data: campaignData, id: campaignId, whatsapp });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
