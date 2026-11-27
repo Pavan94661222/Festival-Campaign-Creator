@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festival & Seasonal Campaign Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
+        .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #6366f1; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="gradient-bg text-white p-8 rounded-2xl mb-8 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">✨ Festival Campaign Creator</h1>
+                <p class="text-indigo-100">Generate complete festival packages in seconds.</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-right">
+                <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">MKT-02</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Input Form -->
+            <div class="lg:col-span-1">
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center">
+                        <i class="fas fa-sliders-h mr-2 text-indigo-600"></i> Campaign Inputs
+                    </h2>
+                    <form id="campaign-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Festival/Season Name</label>
+                            <input type="text" id="festivalName" required placeholder="e.g. Diwali, Holi, Monsoon" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kitchen Capacity (Specials)</label>
+                            <input type="text" id="kitchenCapacity" required placeholder="e.g. 20 sets/day, High"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Budget for Offers (₹)</label>
+                            <input type="text" id="budget" required placeholder="e.g. 50,000 or 15% discount"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Target Segment</label>
+                            <select id="targetSegment" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                                <option value="Dine-in">Dine-in</option>
+                                <option value="Delivery">Delivery</option>
+                                <option value="Corporate">Corporate</option>
+                                <option value="Mixed">Mixed</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="generate-btn" 
+                            class="w-full gradient-bg text-white font-bold py-3 rounded-lg hover:opacity-90 transition transform hover:-translate-y-0.5 active:translate-y-0">
+                            <i class="fas fa-magic mr-2"></i> Generate Campaign
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mt-8 bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                    <h3 class="font-bold text-indigo-900 mb-2 flex items-center">
+                        <i class="fas fa-chart-line mr-2"></i> Why launch early?
+                    </h3>
+                    <p class="text-sm text-indigo-800 leading-relaxed">
+                        Festival season accounts for 35–45% of annual revenue. Campaigns launched 2 weeks early consistently outperform last-minute promotions by 60% in covers and revenue.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Output Results -->
+            <div class="lg:col-span-2">
+                <div id="loading" class="hidden flex flex-col items-center justify-center h-64 card">
+                    <div class="loading-spinner mb-4"></div>
+                    <p class="text-gray-500 font-medium">Gemini is crafting your campaign...</p>
+                </div>
+
+                <div id="results" class="hidden space-y-6">
+                    <!-- Example Output Banner -->
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-quote-left text-yellow-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p id="exampleOutput" class="text-sm text-yellow-700 italic font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Theme & Tagline -->
+                    <div class="card p-6 border-t-4 border-indigo-500">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-bullhorn mr-2 text-indigo-500"></i> Theme & Tagline
+                        </h3>
+                        <div id="theme-content" class="space-y-2"></div>
+                    </div>
+
+                    <!-- Menu Suggestions -->
+                    <div class="card p-6 border-t-4 border-orange-500">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-utensils mr-2 text-orange-500"></i> Special Menu Suggestions
+                        </h3>
+                        <div id="menu-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- Tabs for detailed content -->
+                    <div class="card overflow-hidden">
+                        <div class="flex border-b">
+                            <button class="tab-btn px-6 py-4 text-sm font-bold border-b-2 border-indigo-500 text-indigo-600" data-tab="social">SOCIAL CALENDAR</button>
+                            <button class="tab-btn px-6 py-4 text-sm font-bold text-gray-500 hover:text-gray-700" data-tab="whatsapp">WHATSAPP</button>
+                            <button class="tab-btn px-6 py-4 text-sm font-bold text-gray-500 hover:text-gray-700" data-tab="corporate">CORPORATE</button>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div id="social-tab" class="tab-content">
+                                <div id="social-content" class="space-y-4"></div>
+                            </div>
+                            <div id="whatsapp-tab" class="tab-content hidden">
+                                <div id="whatsapp-content" class="space-y-4"></div>
+                            </div>
+                            <div id="corporate-tab" class="tab-content hidden">
+                                <pre id="corporate-content" class="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="card h-full flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-gray-300 bg-gray-50">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-magic text-3xl text-indigo-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Ready to create magic?</h3>
+                    <p class="text-gray-500 max-w-sm">Fill in the details on the left and click 'Generate Campaign' to see the AI-powered festival plan.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

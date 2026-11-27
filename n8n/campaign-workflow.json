@@ -1,0 +1,195 @@
+{
+  "name": "Festival Campaign Automation (TextMeBot Fix)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "festival-campaign",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ],
+      "id": "webhook-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.body.data;\nreturn [\n  {\n    json: {\n      type: 'whatsapp',\n      content: data.whatsappSequence,\n      example: data.exampleOutput\n    }\n  },\n  {\n    json: {\n      type: 'social',\n      content: data.socialMediaCalendar\n    }\n  }\n];"
+      },
+      "name": "Process Campaign Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        300
+      ],
+      "id": "process-code-id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.type }}",
+              "value2": "whatsapp"
+            }
+          ]
+        }
+      },
+      "name": "Is WhatsApp Content?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        500,
+        200
+      ],
+      "id": "if-whatsapp-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $json.content;\nconst example = $json.example;\n\n// Condense message for URL safety\nconst formattedMessage = `✨ *CAMPAIGN GENERATED* ✨\\n\\n${example}`;\n\nreturn { \n  message: formattedMessage,\n  phone: \"919380365439\",\n  apikey: \"8dN8Eaco11N8\"\n};"
+      },
+      "name": "Format TextMeBot Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        150
+      ],
+      "id": "format-wa-id"
+    },
+    {
+      "parameters": {
+        "url": "=http://api.textmebot.com/send.php?recipient={{ $json.phone }}&apikey={{ $json.apikey }}&text={{ encodeURIComponent($json.message) }}&json=yes",
+        "method": "GET",
+        "options": {}
+      },
+      "name": "Send via TextMeBot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        900,
+        150
+      ],
+      "id": "textmebot-node-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "const social = $json.content;\nconst formattedCalendar = `📅 *7-DAY SOCIAL MEDIA CALENDAR*\\n\\n${social.map((s, i) => `*Day ${i+1}:* ${s.theme || ''}\\n${s.caption || s}`).join('\\n\\n')}`;\n\nreturn { \n  message: formattedCalendar,\n  status: \"READY_FOR_POSTING\"\n};"
+      },
+      "name": "Format Social Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        350
+      ],
+      "id": "format-social-id"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3001/api/webhook/n8n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"success\",\n  \"message\": \"Campaign processed and sent via TextMeBot URL.\"\n}",
+        "options": {}
+      },
+      "name": "Confirm to App",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1100,
+        250
+      ],
+      "id": "confirm-id"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Campaign Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Campaign Data": {
+      "main": [
+        [
+          {
+            "node": "Is WhatsApp Content?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is WhatsApp Content?": {
+      "main": [
+        [
+          {
+            "node": "Format TextMeBot Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Social Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format TextMeBot Message": {
+      "main": [
+        [
+          {
+            "node": "Send via TextMeBot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send via TextMeBot": {
+      "main": [
+        [
+          {
+            "node": "Confirm to App",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Social Summary": {
+      "main": [
+        [
+          {
+            "node": "Confirm to App",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "5",
+  "meta": {
+    "instanceId": "local"
+  }
+}

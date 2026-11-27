@@ -1,0 +1,15 @@
+# Render Blueprint — deploys the Express backend (API + Gemini campaign generation)
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: festival-campaign-creator
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      # Secret — set this in the Render dashboard (not committed).
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: NODE_VERSION
+        value: "24"
